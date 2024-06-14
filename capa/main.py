@@ -12,6 +12,7 @@ import io
 import os
 import sys
 import time
+import hashlib
 import logging
 import argparse
 import textwrap
@@ -40,7 +41,7 @@ import capa.features.extractors
 import capa.render.result_document
 import capa.render.result_document as rdoc
 import capa.features.extractors.common
-from capa.rules import RuleSet
+from capa.rules import RuleSet, InvalidRuleSet
 from capa.engine import MatchResults
 from capa.loader import BACKEND_VIV, BACKEND_CAPE, BACKEND_BINJA, BACKEND_DOTNET, BACKEND_FREEZE, BACKEND_PEFILE
 from capa.helpers import (
@@ -571,7 +572,92 @@ def get_rules_from_cli(args) -> RuleSet:
         else:
             cache_dir = capa.rules.cache.get_default_cache_directory()
 
-        rules = capa.rules.get_rules(args.rules, cache_dir=cache_dir)
+        if capa.rules.utils.is_dev_environment():
+            # this is a developer environment and git exists in PATH
+            modified_files = capa.rules.utils.get_modified_files()
+            commit_hash = capa.rules.utils.get_git_commit_hash()
+
+            if modified_files or commit_hash:
+                hash = hashlib.sha256()
+                hash.update(capa.version.__version__.encode("utf-8"))
+                hash.update(b"\x00")
+
+                # if there any modified files, include their contents
+                # in the hash
+                for file in modified_files:
+                    try:
+                        file_content = file.read_bytes()
+                        logger.debug("found modified source file %s", file)
+                        hash.update(file_content)
+                        hash.update(b"\x00")
+                    except FileNotFoundError as e:
+                        logger.error("modified file not found: %s", file)
+                        logger.error("%s", e)
+
+                # include the commit hash as well
+                if commit_hash:
+                    hash.update(commit_hash.encode("ascii"))
+                    hash.update(b"\x00")
+
+                # include the hash of the rule contents
+                rule_file_paths = capa.rules.collect_rule_file_paths(args.rules)
+                rule_contents = [file_path.read_bytes() for file_path in rule_file_paths]
+
+                rule_hashes = sorted([hashlib.sha256(buf).hexdigest() for buf in rule_contents])
+                for rule_hash in rule_hashes:
+                    hash.update(rule_hash.encode("ascii"))
+                    hash.update(b"\x00")
+
+                logger.debug(
+                    "developer environment detected, ruleset cache will be auto-generated upon each source modification"
+                )
+
+                # compute the cache identifier
+                id = hash.hexdigest()
+                path = capa.rules.cache.get_cache_path(cache_dir, id)
+
+                if path.exists():
+                    # the ruleset cache already exist, that means there weren't
+                    # any new source changes since last execution
+                    logger.debug("loading rule set from already exisiting cache: %s", path)
+                    buf = path.read_bytes()
+
+                    try:
+                        cache = capa.rules.cache.RuleCache.load(buf)
+                    except AssertionError:
+                        logger.debug("rule set cache is invalid: %s", path)
+                        # delete the cache that seems to be invalid.
+                        path.unlink()
+                        raise InvalidRuleSet("rule set cache is invalid")
+                    else:
+                        rules = cache.ruleset
+                else:
+                    # a previous cache was not found, re-generate a new cache
+                    rules_list: List[capa.rules.Rule] = []
+
+                    total_rule_count = len(rule_file_paths)
+                    for i, (rule_path, content) in enumerate(zip(rule_file_paths, rule_contents)):
+                        capa.rules.on_load_rule_default(rule_path, i, total_rule_count)
+
+                        try:
+                            rule = capa.rules.Rule.from_yaml(content.decode("utf-8"))
+                        except capa.rules.InvalidRule:
+                            raise
+                        else:
+                            rule.meta["capa/path"] = rule_path.as_posix()
+                            rule.meta["capa/nursery"] = capa.rules.is_nursery_rule_path(rule_path)
+
+                            rules_list.append(rule)
+                            logger.debug("loaded rule: '%s' with scope: %s", rule.name, rule.scopes)
+
+                    cache = capa.rules.cache.RuleCache(id, capa.rules.RuleSet(rules_list))
+                    path.write_bytes(cache.dump())
+
+                    rules = cache.ruleset
+
+        else:
+            # not a developer environment, load rules  normally
+            rules = capa.rules.get_rules(args.rules, cache_dir=cache_dir)
     except (IOError, capa.rules.InvalidRule, capa.rules.InvalidRuleSet) as e:
         logger.error("%s", str(e))
         logger.error(
