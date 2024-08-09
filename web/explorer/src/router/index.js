@@ -3,7 +3,7 @@ import ImportView from "../views/ImportView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(),
     routes: [
         {
             path: "/",
