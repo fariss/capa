@@ -20,7 +20,7 @@ const items = ref([
                     v-ripple
                     class="flex align-items-center justify-content-center text-color w-2rem"
                     v-tooltip.bottom="'Download capa Explorer Web for offline usage'"
-                    href="./capa-explorer-web.zip"
+                    href="capa/explorer/capa-explorer-web.zip"
                     download="capa-explorer-web.zip"
                     aria-label="Download capa Explorer Web release"
                  >
