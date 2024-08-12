@@ -50,6 +50,9 @@ jobs:
       - name: Generate release bundle
         run: npm run build:bundle
         working-directory: ./web/explorer
+      - name: List directory contents
+        run: ls -al ./web/explorer
+        working-directory: ./web/explorer
       - name: Zip release bundle
         run: zip -r capa-explorer-web.zip capa-explorer-web
         working-directory: ./web/explorer
