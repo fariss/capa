@@ -11,6 +11,7 @@ lerna-debug.log*
 node_modules
 .DS_Store
 dist
+capa-explorer-web # directory where bundle is stored
 dist-ssr
 coverage
 *.local

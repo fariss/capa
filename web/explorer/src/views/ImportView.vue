@@ -10,13 +10,17 @@ import SettingsPanel from "@/components/SettingsPanel.vue";
 import NamespaceChart from "@/components/NamespaceChart.vue";
 import Toast from "primevue/toast";
 
-import demoRdocStatic from "@testfiles/rd/al-khaser_x64.exe_.json";
-import demoRdocDynamic from "@testfiles/rd/0000a65749f5902c4d82ffa701198038f0b4870b00a27cfca109f8f933476d82.json";
-
 import { useRdocLoader } from "@/composables/useRdocLoader";
 const { rdocData, isValidVersion, loadRdoc } = useRdocLoader();
 
 import { isGzipped, decompressGzip, readFileAsText } from "@/utils/fileUtils";
+
+// check if we're in bundle mode by reading the VITE_IS_BUNDLE environment variable
+// this variable is set to 'true' when building the release
+const isBundle = import.meta.env.VITE_IS_BUNDLE === "true";
+
+const demoRdocStatic = ref(null);
+const demoRdocDynamic = ref(null);
 
 const showCapabilitiesByFunctionOrProcess = ref(false);
 const showLibraryRules = ref(false);
@@ -64,14 +68,18 @@ const loadFromURL = (url) => {
 };
 
 const loadDemoDataStatic = () => {
-    loadRdoc(demoRdocStatic);
+    if (demoRdocStatic.value) {
+        loadRdoc(demoRdocStatic.value);
+    }
 };
 
 const loadDemoDataDynamic = () => {
-    loadRdoc(demoRdocDynamic);
+    if (demoRdocDynamic.value) {
+        loadRdoc(demoRdocDynamic.value);
+    }
 };
 
-onMounted(() => {
+onMounted(async () => {
     // Clear out sessionStorage to prevent stale data from being used
     sessionStorage.clear();
 
@@ -81,6 +89,24 @@ onMounted(() => {
     if (encodedRdocURL) {
         const rdocURL = decodeURIComponent(encodedRdocURL);
         loadFromURL(rdocURL);
+    }
+
+    // Load demo data if not in bundle mode
+    if (!isBundle) {
+        try {
+            // Import static demo data
+            await import("@testfiles/rd/al-khaser_x64.exe_.json").then((module) => {
+                demoRdocStatic.value = module.default;
+            });
+
+            await import("@testfiles/rd/0000a65749f5902c4d82ffa701198038f0b4870b00a27cfca109f8f933476d82.json").then(
+                (module) => {
+                    demoRdocDynamic.value = module.default;
+                }
+            );
+        } catch (error) {
+            console.error("Error importing demo files:", error);
+        }
     }
 });
 </script>

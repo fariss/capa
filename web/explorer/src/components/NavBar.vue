@@ -1,5 +1,6 @@
 <script setup>
 import Menubar from "primevue/menubar";
+const isBundle = import.meta.env.VITE_IS_BUNDLE === "true";
 </script>
 
 <template>
@@ -7,6 +8,7 @@ import Menubar from "primevue/menubar";
         <template #end>
             <div class="flex align-items-center gap-3">
                 <a
+                    v-if="!isBundle"
                     v-ripple
                     v-tooltip.right="'Download capa Explorer Web for offline usage'"
                     href="./capa-explorer-web.zip"
