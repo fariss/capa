@@ -43,7 +43,7 @@ const loadFromURL = async (url) => {
     const result = await loadRdoc(url);
     if (result) {
         rdocStore.setData(result);
-        router.push("/analysis");
+        router.push({ name: "analysis", query: { rdoc: url } });
     }
 };
 
