@@ -55,7 +55,7 @@
 
         <!-- example node: "exit(0) -> 0" (if the node type is call-info, we highlight node.data.name.callInfo) -->
         <template v-else-if="node.data.type === 'call-info'">
-            <highlightjs lang="c" :code="node.data.name.callInfo" class="text-xs" />
+            <highlightjs lang="c" :code="node.data.name.callInfo" class="text-xs" style="white-space: wrap" />
         </template>
 
         <!-- example node: " = IMAGE_NT_SIGNATURE (PE)" -->
