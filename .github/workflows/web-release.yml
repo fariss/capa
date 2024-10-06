@@ -1,0 +1,70 @@
+name: publish capa Explorer Web release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number for the release'
+        required: true
+        type: string
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './web/explorer/package-lock.json'
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./web/explorer
+
+    - name: Run linting
+      run: npm run lint
+      working-directory: ./web/explorer
+
+    - name: Check formatting
+      run: npm run format:check
+      working-directory: ./web/explorer
+
+    - name: Run tests
+      run: npm run test
+      working-directory: ./web/explorer
+
+    - name: Build offline bundle
+      run: npm run build:bundle
+      working-directory: ./web/explorer
+
+    - name: Compress bundle
+      run: |
+        cd capa-explorer-web
+        zip -r ../capa-explorer-web-${{ github.event.inputs.version }}.zip .
+      working-directory: ./web/explorer
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Check if release already exists
+      id: check_file
+      run: |
+        if gsutil -q stat gs://capa-explorer-web-test/capa-explorer-web-${{ github.event.inputs.version }}-${GITHUB_SHA::7}.zip; then
+          echo "A release with this version already exists"
+          exit 1
+        fi
+      working-directory: ./web/explorer
+
+    - name: Upload release to GCS
+      if: success()
+      run: |
+        gsutil cp -n capa-explorer-web-${{ github.event.inputs.version }}-${GITHUB_SHA::7}.zip gs://capa-explorer-web-test/
+      working-directory: ./web/explorer
