@@ -11,9 +11,36 @@ permissions:
   pull-requests: write
 
 jobs:
+  debug_pr_info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug PR information
+        env:
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          EVENT_CONTEXT: ${{ toJSON(github.event) }}
+        run: |
+          echo "PR User: $PR_USER"
+          echo "PR Author: $PR_AUTHOR"
+          echo "Actor: $ACTOR"
+          echo "Event Name: $EVENT_NAME"
+          echo "Ref: $REF"
+          echo "PR Head Ref: $PR_HEAD_REF"
+          echo "PR Base Ref: $PR_BASE_REF"
+          echo "Full Event Context:"
+          echo "$EVENT_CONTEXT"
+  
   check_changelog:
     # no need to check for dependency updates via dependabot
-    if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+    if: |
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'dependabot-preview[bot]' &&
+      github.event.pull_request.user.login != 's-ff'
     runs-on: ubuntu-latest
     env:
       NO_CHANGELOG: '[x] No CHANGELOG update needed'
