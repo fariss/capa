@@ -32,7 +32,7 @@ To interactively inspect capa results in your browser use the [capa Explorer Web
 
 If you want to inspect or write capa rules, head on over to the [capa-rules repository](https://github.com/mandiant/capa-rules). Otherwise, keep reading.
 
-Below you find a list of [our capa blog posts with more details.](#blog-posts)
+Below you find a list of [our capa blog posts with more details.](#blog-posts).
 
 # example capa output
 ```
