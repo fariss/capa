@@ -14,3 +14,7 @@
 - Release Date: 2024-11-26 18:03:38 UTC
 - SHA256: d35ad36890abcb36e7e2b712d89d1597a1ece20a56f3d6413e629965fbc2ee89
 
+## capa-explorer-web-v1.0.7-4f540db
+- Release Date: 2024-11-26 18:30:56 UTC
+- SHA256: ad6643d35e8276d1695d3ee4d83db17afb2e71b869b52521e578d1574eddfcc3
+
