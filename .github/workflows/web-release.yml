@@ -73,6 +73,13 @@ jobs:
       working-directory: web/explorer/releases
 
     - name: Create Pull Request
+      run: |
+        git config --local user.email "capa-dev@mandiant.com"
+        git config --local user.name "Capa Bot"
+        git add -f web/explorer/releases/${{ env.RELEASE_NAME }}.zip web/explorer/releases/CHANGELOG.md
+        git add -u web/explorer/releases/
+
+    - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
