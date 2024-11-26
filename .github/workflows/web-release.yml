@@ -73,22 +73,6 @@ jobs:
       working-directory: web/explorer/releases
 
     - name: Create Pull Request
-      run: |
-        # create a new branch
-        git config --local user.email "capa-dev@mandiant.com"
-        git config --local user.name "Capa Bot"
-        BRANCH_NAME="release/web-v${{ github.event.inputs.version }}"
-        git checkout -b $BRANCH_NAME
-
-        # add and commit changes
-        git add -f web/explorer/releases/${{ env.RELEASE_NAME }}.zip web/explorer/releases/CHANGELOG.md
-        git add -u web/explorer/releases/
-        #git commit -m ":robot: explorer web: add release ${{ env.RELEASE_NAME }}"
-
-        # push the branch
-        #git push origin $BRANCH_NAME
-
-    - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
