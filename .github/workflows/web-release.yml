@@ -105,3 +105,5 @@ jobs:
         base: master
         labels: release
         delete-branch: true
+        committer: Capa Bot <capa-dev@mandiant.com>
+        author: Capa Bot <capa-dev@mandiant.com>
