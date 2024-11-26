@@ -90,9 +90,6 @@ jobs:
           - [x] No new tests needed
           - [x] No documentation update needed
         commit-message: ":robot: explorer web: add release ${{ env.RELEASE_NAME }}"
-        add-paths: |
-          web/explorer/releases/${{ env.RELEASE_NAME }}.zip
-          web/explorer/releases/CHANGELOG.md
         branch: release/web-v${{ github.event.inputs.version }}
         base: master
         labels: webui
