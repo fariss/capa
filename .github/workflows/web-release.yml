@@ -83,16 +83,16 @@ jobs:
         # add and commit changes
         git add -f web/explorer/releases/${{ env.RELEASE_NAME }}.zip web/explorer/releases/CHANGELOG.md
         git add -u web/explorer/releases/
-        git commit -m ":robot: explorer web: add release ${{ env.RELEASE_NAME }}"
+        #git commit -m ":robot: explorer web: add release ${{ env.RELEASE_NAME }}"
 
         # push the branch
         git push origin $BRANCH_NAME
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        title: "add new Explorer Web v${{ github.event.inputs.version }}"
+        title: "explorer web: add release v${{ github.event.inputs.version }}"
         body: |
           This PR adds a new capa Explorer Web release v${{ github.event.inputs.version }}.
 
@@ -105,6 +105,7 @@ jobs:
           - [x] No CHANGELOG update needed
           - [x] No new tests needed
           - [x] No documentation update needed
+        commit-message: ":robot: explorer web: add release ${{ env.RELEASE_NAME }}"
         branch: release/web-v${{ github.event.inputs.version }}
         base: master
         labels: webui
