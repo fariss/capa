@@ -92,7 +92,7 @@ jobs:
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        title: ":package: add new Explorer Web v${{ github.event.inputs.version }}"
+        title: "add new Explorer Web v${{ github.event.inputs.version }}"
         body: |
           This PR adds a new capa Explorer Web release v${{ github.event.inputs.version }}.
 
@@ -101,9 +101,13 @@ jobs:
           - SHA256: ${{ env.RELEASE_SHA256 }}
 
           This PR was automatically created by the web release workflow.
+
+          - [x] No CHANGELOG update needed
+          - [x] No new tests needed
+          - [x] No documentation update needed
         branch: release/web-v${{ github.event.inputs.version }}
         base: master
-        labels: release
+        labels: webui
         delete-branch: true
         committer: Capa Bot <capa-dev@mandiant.com>
         author: Capa Bot <capa-dev@mandiant.com>
